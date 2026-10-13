@@ -1,0 +1,10 @@
+{
+  "name": "adoptree",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "pnpm --dir apps/web build && pnpm --dir apps/api build",
+    "start": "pnpm --dir apps/api start",
+    "test": "pnpm --dir apps/api test"
+  }
+}
