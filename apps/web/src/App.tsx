@@ -26,7 +26,7 @@ import TreeArt from './TreeArt';
 import MapGraphic from './MapGraphic';
 import AuthModal from './AuthModal';
 import DashboardPage from './DashboardPage';
-import { backendApiUrl } from './api/backend';
+import { catalog as localCatalog, initialTrees } from './api/catalog';
 import {
   fetchMockApiTrees,
   fetchMockApiSelections,
@@ -197,13 +197,20 @@ function AdoptionModal({
       if (user && currentUserSelectionCount >= MAX_USER_SELECTIONS) {
         throw new Error(MAX_USER_SELECTIONS_MESSAGE);
       }
-      const response = await fetch(backendApiUrl('/api/adoptions/preview'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ speciesId, zoneId, name: name.trim() }),
-      });
-      if (!response.ok) throw new Error('No pudimos crear el recorrido. Inténtalo de nuevo.');
-      const tree = (await response.json()) as Tree;
+      if (!chosenSpecies || !zone || name.trim().length < 2 || name.trim().length > 32) {
+        throw new Error('Selecciona una especie, una zona y un nombre válido.');
+      }
+      const tree: Tree = {
+        id: `AD-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: name.trim(),
+        speciesId,
+        zoneId,
+        plantedAt: null,
+        status: 'En preparación',
+        timeline: [],
+        amountUsd: 5,
+        charged: false,
+      };
 
       if (user) {
         const matchedMock = mockTrees.find((t) =>
@@ -728,7 +735,6 @@ export default function App() {
   const [pendingAdoption, setPendingAdoption] = useState<ApiTree | null>(null);
   const [adoptionNotice, setAdoptionNotice] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [error, setError] = useState('');
   const [authActionError, setAuthActionError] = useState<string | null>(null);
 
   const [user, setUser] = useState<DemoUser | null>(null);
@@ -753,25 +759,18 @@ export default function App() {
     }
   }, []);
 
-  // Cargar catálogo interno
+  // El catálogo fijo se sirve junto al frontend para no depender de un host /api en producción.
   useEffect(() => {
-    Promise.all([fetch(backendApiUrl('/api/catalog')), fetch(backendApiUrl('/api/trees'))])
-      .then(async ([catalogResponse, treesResponse]) => {
-        if (!catalogResponse.ok || !treesResponse.ok)
-          throw new Error('No pudimos cargar la información. Recarga la página.');
-        setCatalog((await catalogResponse.json()) as Catalog);
-        const records = (await treesResponse.json()) as Tree[];
-        setTrees(records);
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          try {
-            setActiveTree(JSON.parse(saved) as Tree);
-          } catch {
-            localStorage.removeItem(STORAGE_KEY);
-          }
-        }
-      })
-      .catch((reason) => setError(reason instanceof Error ? reason.message : 'No pudimos cargar la información.'));
+    setCatalog(localCatalog);
+    setTrees(initialTrees);
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setActiveTree(JSON.parse(saved) as Tree);
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
   }, []);
 
   // Cargar datos de MockAPI (árboles y selecciones)
@@ -1014,16 +1013,7 @@ export default function App() {
         </div>
       )}
 
-      {error ? (
-        <main className="error-page">
-          <Leaf size={36} />
-          <h1>Algo salió mal</h1>
-          <p>{error}</p>
-          <button className="button button-dark" onClick={() => window.location.reload()}>
-            Reintentar
-          </button>
-        </main>
-      ) : !catalog ? (
+      {!catalog ? (
         <main className="loading-page">
           <span className="loading-leaf">
             <Sprout size={30} />

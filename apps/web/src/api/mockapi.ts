@@ -1,7 +1,12 @@
+/// <reference types="vite/client" />
+
+const mockApiBaseUrl = (import.meta.env.VITE_MOCKAPI_BASE_URL || 'https://6ace6182f338359cf1c37610.mockapi.io/adoptree-api')
+  .replace(/\/+$/, '');
+
 export const MOCKAPI_CONFIG = {
-  BASE_URL: 'https://6ace6182f338359cf1c37610.mockapi.io/adoptree-api',
-  TREES_URL: 'https://6ace6182f338359cf1c37610.mockapi.io/adoptree-api/tree',
-  SELECTIONS_URL: 'https://6ace6182f338359cf1c37610.mockapi.io/adoptree-api/selections',
+  BASE_URL: mockApiBaseUrl,
+  TREES_URL: `${mockApiBaseUrl}/tree`,
+  SELECTIONS_URL: `${mockApiBaseUrl}/selections`,
 };
 
 export const MAX_USER_SELECTIONS = 5;
