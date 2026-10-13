@@ -55,6 +55,17 @@ Comprueba `http://localhost:3000` y `http://localhost:3000/api/health`. El servi
 
 La API usa el `PORT` proporcionado por Railway. Frontend y API se sirven desde el mismo dominio. Los cambios que subas a la rama conectada disparan una nueva compilación de la imagen.
 
+## Desplegar frontend y API por separado en Vercel
+
+La API NestJS puede publicarse como un proyecto Vercel independiente mediante la función `apps/api/api/[...path].ts`.
+
+1. Crea un proyecto Vercel para el frontend con **Root Directory** `apps/web` y el comando de build `pnpm build`.
+2. Crea otro proyecto con **Root Directory** `apps/api`, **Framework Preset** `Other` y el comando de build `pnpm build`. Deja el directorio de salida sin configurar para que Vercel publique la función de `api/`.
+3. Cuando Vercel asigne un dominio al proyecto de API, establece en el proyecto del frontend la variable `VITE_API_BASE_URL` con el origen HTTPS de ese dominio, sin una ruta final `/api` ni una barra al final (por ejemplo, `https://<dominio-real-de-la-api>`).
+4. Redespliega el frontend después de configurar la variable.
+
+Sin `VITE_API_BASE_URL`, el frontend usa rutas relativas `/api/...`; esto conserva el proxy local de Vite y el despliegue en el que frontend y API comparten origen.
+
 ## Desplegar en una VPS o EC2
 
 Estos pasos sirven para una VPS Linux con acceso SSH y Docker. Si usas Ubuntu, instala Docker Engine siguiendo la [guía oficial de Docker](https://docs.docker.com/engine/install/ubuntu/). En EC2, permite tráfico entrante a los puertos 80 y 443 en el grupo de seguridad; limita SSH a tu IP. Los [grupos de seguridad](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) controlan ese acceso.

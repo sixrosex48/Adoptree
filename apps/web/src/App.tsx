@@ -26,6 +26,7 @@ import TreeArt from './TreeArt';
 import MapGraphic from './MapGraphic';
 import AuthModal from './AuthModal';
 import DashboardPage from './DashboardPage';
+import { backendApiUrl } from './api/backend';
 import {
   fetchMockApiTrees,
   fetchMockApiSelections,
@@ -196,7 +197,7 @@ function AdoptionModal({
       if (user && currentUserSelectionCount >= MAX_USER_SELECTIONS) {
         throw new Error(MAX_USER_SELECTIONS_MESSAGE);
       }
-      const response = await fetch('/api/adoptions/preview', {
+      const response = await fetch(backendApiUrl('/api/adoptions/preview'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ speciesId, zoneId, name: name.trim() }),
@@ -754,7 +755,7 @@ export default function App() {
 
   // Cargar catálogo interno
   useEffect(() => {
-    Promise.all([fetch('/api/catalog'), fetch('/api/trees')])
+    Promise.all([fetch(backendApiUrl('/api/catalog')), fetch(backendApiUrl('/api/trees'))])
       .then(async ([catalogResponse, treesResponse]) => {
         if (!catalogResponse.ok || !treesResponse.ok)
           throw new Error('No pudimos cargar la información. Recarga la página.');

@@ -1,12 +1,10 @@
-import { NestFactory } from '@nestjs/core';
 import express from 'express';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { AppModule } from './app';
+import { createApp } from './server';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
-  app.setGlobalPrefix('api');
+  const app = await createApp();
 
   const webDist = join(__dirname, '../../web/dist');
   if (existsSync(join(webDist, 'index.html'))) {
